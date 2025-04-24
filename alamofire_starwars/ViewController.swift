@@ -166,10 +166,11 @@ struct SpeciesProperties: Codable {
     }
 }
 
-struct FilmDetailResponse: Codable {
+struct FilmListResponse: Codable {
     let message: String
-    let result: FilmDetailResult
+    let result: [FilmDetailResult]
 }
+
 
 struct FilmDetailResult: Codable {
     let properties: FilmProperties
@@ -205,36 +206,38 @@ struct FilmProperties: Codable {
 class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        fetchFilmDetail()
+        fetchAllFilms()
     }
 
-    func fetchFilmDetail() {
-        let url = "https://www.swapi.tech/api/films/1"
+    func fetchAllFilms() {
+        let url = "https://www.swapi.tech/api/films"
 
-        AF.request(url).responseDecodable(of: FilmDetailResponse.self) { response in
+        AF.request(url).responseDecodable(of: FilmListResponse.self) { response in
             switch response.result {
-            case .success(let filmData):
-                let film = filmData.result.properties
+            case .success(let filmListResponse):
+                let films = filmListResponse.result.map { $0.properties }
 
-                print("🎬 Title: \(film.title)")
-                print("🎞 Episode: \(film.episodeId)")
-                print("🎬 Director: \(film.director)")
-                print("🎬 Producer: \(film.producer)")
-                print("📆 Release Date: \(film.releaseDate)")
-                print("📜 Opening Crawl:\n\(film.openingCrawl)")
+                for film in films {
+                    print("🎬 Title: \(film.title)")
+                    print("🎞 Episode: \(film.episodeId)")
+                    print("🎬 Director: \(film.director)")
+                    print("🎬 Producer: \(film.producer)")
+                    print("📆 Release Date: \(film.releaseDate)")
+                    print("📜 Opening Crawl:\n\(film.openingCrawl)\n")
 
-                //self.fetchDetails(from: film.starships, category: "🚀 Starship")
-                self.fetchCharacterDetails(from: film.characters)
-                self.fetchVehicleDetails(from: film.vehicles)
-                self.fetchStarshipDetails(from: film.starships)
-                self.fetchPlanetDetails(from: film.planets)
-                self.fetchSpeciesDetails(from: film.species)
+                    self.fetchCharacterDetails(from: film.characters)
+                    self.fetchVehicleDetails(from: film.vehicles)
+                    self.fetchStarshipDetails(from: film.starships)
+                    self.fetchPlanetDetails(from: film.planets)
+                    self.fetchSpeciesDetails(from: film.species)
+                }
 
             case .failure(let error):
                 print("❌ Error: \(error.localizedDescription)")
             }
         }
     }
+
 
     
 
