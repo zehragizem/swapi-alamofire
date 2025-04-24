@@ -177,18 +177,18 @@ struct FilmDetailResult: Codable {
 }
 
 struct FilmProperties: Codable {
-    let title: String
-    let episodeId: Int
-    let director: String
-    let producer: String
-    let releaseDate: String
-    let openingCrawl: String
-    let starships: [String]
-    let vehicles: [String]
-    let planets: [String]
-    let characters: [String]
-    let species: [String]
-    
+    let title: String?
+    let episodeId: Int?
+    let director: String?
+    let producer: String?
+    let releaseDate: String?
+    let openingCrawl: String?
+    let starships: [String]?
+    let vehicles: [String]?
+    let planets: [String]?
+    let characters: [String]?
+    let species: [String]?
+
     enum CodingKeys: String, CodingKey {
         case title
         case episodeId = "episode_id"
@@ -201,11 +201,18 @@ struct FilmProperties: Codable {
 }
 
 
+
 // MARK: - ViewController
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    var films: [FilmProperties] = []
+    @IBOutlet weak var tableView: UITableView!
+
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.delegate = self
+        tableView.dataSource = self
+
         fetchAllFilms()
     }
 
@@ -215,21 +222,19 @@ class ViewController: UIViewController {
         AF.request(url).responseDecodable(of: FilmListResponse.self) { response in
             switch response.result {
             case .success(let filmListResponse):
-                let films = filmListResponse.result.map { $0.properties }
+                self.films = filmListResponse.result.map { $0.properties }
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
 
-                for film in films {
-                    print("🎬 Title: \(film.title)")
-                    print("🎞 Episode: \(film.episodeId)")
-                    print("🎬 Director: \(film.director)")
-                    print("🎬 Producer: \(film.producer)")
-                    print("📆 Release Date: \(film.releaseDate)")
-                    print("📜 Opening Crawl:\n\(film.openingCrawl)\n")
 
-                    self.fetchCharacterDetails(from: film.characters)
-                    self.fetchVehicleDetails(from: film.vehicles)
-                    self.fetchStarshipDetails(from: film.starships)
-                    self.fetchPlanetDetails(from: film.planets)
-                    self.fetchSpeciesDetails(from: film.species)
+                for film in self.films {
+
+                    self.fetchCharacterDetails(from: film.characters!)
+                    self.fetchVehicleDetails(from: film.vehicles!)
+                    self.fetchStarshipDetails(from: film.starships!)
+                    self.fetchPlanetDetails(from: film.planets!)
+                    self.fetchSpeciesDetails(from: film.species!)
                 }
 
             case .failure(let error):
@@ -251,16 +256,7 @@ class ViewController: UIViewController {
                 switch response.result {
                 case .success(let detail):
                     let species = detail.result.properties
-                    print("👽 Species Name: \(species.name)")
-                    print("• Classification: \(species.classification)")
-                    print("• Designation: \(species.designation)")
-                    print("• Average Height: \(species.averageHeight)")
-                    print("• Lifespan: \(species.averageLifespan)")
-                    print("• Language: \(species.language)")
-                    print("• Skin Colors: \(species.skinColors)")
-                    print("• Hair Colors: \(species.hairColors)")
-                    print("• Eye Colors: \(species.eyeColors)")
-                    print("───────────────")
+
                 case .failure(let error):
                     print("⚠️ Failed to fetch species: \(error.localizedDescription)")
                 }
@@ -282,21 +278,7 @@ class ViewController: UIViewController {
                 switch response.result {
                 case .success(let detail):
                     let starship = detail.result.properties
-                    print("🚀 Starship Name: \(starship.name)")
-                    print("• Model: \(starship.model)")
-                    print("• Starship Class: \(starship.starshipClass)")
-                    print("• Manufacturer: \(starship.manufacturer)")
-                    print("• Cost in Credits: \(starship.costInCredits)")
-                    print("• Length: \(starship.length)")
-                    print("• Crew: \(starship.crew)")
-                    print("• Passengers: \(starship.passengers)")
-                    print("• Max Atmosphering Speed: \(starship.maxAtmospheringSpeed)")
-                    print("• Cargo Capacity: \(starship.cargoCapacity)")
-                    print("• Consumables: \(starship.consumables)")
-                    print("• Hyperdrive Rating: \(starship.hyperdriveRating)")
-                    print("• MGLT: \(starship.MGLT)")
-                    print("• Films: \(starship.films.joined(separator: ", "))")
-                    print("───────────────")
+
                 case .failure(let error):
                     print("⚠️ Failed to fetch starship: \(error.localizedDescription)")
                 }
@@ -318,16 +300,7 @@ class ViewController: UIViewController {
                 switch response.result {
                 case .success(let detail):
                     let planet = detail.result.properties
-                    print("🌍 Planet Name: \(planet.name)")
-                    print("• Climate: \(planet.climate)")
-                    print("• Surface Water: \(planet.surfaceWater)")
-                    print("• Diameter: \(planet.diameter)")
-                    print("• Rotation Period: \(planet.rotationPeriod)")
-                    print("• Terrain: \(planet.terrain)")
-                    print("• Gravity: \(planet.gravity)")
-                    print("• Orbital Period: \(planet.orbitalPeriod)")
-                    print("• Population: \(planet.population)")
-                    print("───────────────")
+
                 case .failure(let error):
                     print("⚠️ Failed to fetch planet: \(error.localizedDescription)")
                 }
@@ -349,20 +322,7 @@ class ViewController: UIViewController {
                 switch response.result {
                 case .success(let detail):
                     let vehicle = detail.result.properties
-                    print("🚗 Vehicle Name: \(vehicle.name)")
-                    print("• Model: \(vehicle.model)")
-                    print("• Manufacturer: \(vehicle.manufacturer)")
-                    print("• Vehicle Class: \(vehicle.vehicleClass)")
-                    print("• Cost in Credits: \(vehicle.costInCredits)")
-                    print("• Length: \(vehicle.length)")
-                    print("• Crew: \(vehicle.crew)")
-                    print("• Passengers: \(vehicle.passengers)")
-                    print("• Max Atmosphering Speed: \(vehicle.maxAtmospheringSpeed)")
-                    print("• Cargo Capacity: \(vehicle.cargoCapacity)")
-                    print("• Consumables: \(vehicle.consumables)")
-                    print("• Films: \(vehicle.films.joined(separator: ", "))")
-                    print("• Pilots: \(vehicle.pilots.isEmpty ? "None" : vehicle.pilots.joined(separator: ", "))")
-                    print("───────────────")
+
                 case .failure(let error):
                     print("⚠️ Failed to fetch vehicle: \(error.localizedDescription)")
                 }
@@ -384,17 +344,7 @@ class ViewController: UIViewController {
                 switch response.result {
                 case .success(let detail):
                     let character = detail.result.properties
-                    print("👤 Character Name: \(character.name)")
-                    print("• Gender: \(character.gender)")
-                    print("• Skin Color: \(character.skinColor)")
-                    print("• Hair Color: \(character.hairColor)")
-                    print("• Height: \(character.height) cm")
-                    print("• Eye Color: \(character.eyeColor)")
-                    print("• Mass: \(character.mass) kg")
-                    print("• Homeworld: \(character.homeworld)")
-                    print("• Birth Year: \(character.birthYear)")
-                    print("• URL: \(character.url)")
-                    print("───────────────")
+
                 case .failure(let error):
                     print("⚠️ Failed to fetch character: \(error.localizedDescription)")
                 }
@@ -404,6 +354,42 @@ class ViewController: UIViewController {
 
         group.notify(queue: .main) {
             print("✅ Tüm karakter verileri getirildi.")
+        }
+    }
+
+    // MARK: - TableView DataSource
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return films.count
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "FilmCell", for: indexPath)
+        let film = films[indexPath.row]
+        let episode = film.episodeId ?? 0
+        let title = film.title ?? "No Title"
+        cell.textLabel?.text = "Episode \(episode): \(title)"
+
+        return cell
+    }
+
+    // MARK: - Navigation
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let film = films[indexPath.row]
+        performSegue(withIdentifier: "ShowFilmDetail", sender: film)
+    }
+
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ShowFilmDetail" {
+            guard let destination = segue.destination as? FilmDetailViewController,
+                  let film = sender as? FilmProperties else {
+                print("❌ Segue hatası: veri aktarılamadı")
+                return
+            }
+            print("✅ Film verisi:", film.title)
+            destination.film = film
         }
     }
 
