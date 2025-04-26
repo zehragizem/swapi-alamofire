@@ -12,12 +12,19 @@ class FilmDetailViewController: UIViewController, UITableViewDelegate, UITableVi
     var filmData: FilmData?
     
     @IBOutlet weak var tableView: UITableView!
-    
+
+
     enum SectionType: Int, CaseIterable {
+        case title, episode, director, producer, releaseDate
         case starships, vehicles, planets, characters, species
         
         var title: String {
             switch self {
+            case .title: return "Film Name"
+            case .episode: return "Episode"
+            case .director: return "Director"
+            case .producer: return "Producer"
+            case .releaseDate: return "Release Date"
             case .starships: return "Starships"
             case .vehicles: return "Vehicles"
             case .planets: return "Planets"
@@ -27,6 +34,7 @@ class FilmDetailViewController: UIViewController, UITableViewDelegate, UITableVi
         }
     }
 
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -35,6 +43,7 @@ class FilmDetailViewController: UIViewController, UITableViewDelegate, UITableVi
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "DetailCell")
         
         title = filmData?.properties.title ?? "Film Detail"
+
     }
 
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -44,6 +53,8 @@ class FilmDetailViewController: UIViewController, UITableViewDelegate, UITableVi
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard let film = filmData else { return 0 }
         switch SectionType(rawValue: section)! {
+        case .title, .episode, .director, .producer, .releaseDate:
+            return 1
         case .starships: return film.starships.count
         case .vehicles: return film.vehicles.count
         case .planets: return film.planets.count
@@ -59,9 +70,20 @@ class FilmDetailViewController: UIViewController, UITableViewDelegate, UITableVi
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "DetailCell", for: indexPath)
         guard let film = filmData else { return cell }
-
+        
         let section = SectionType(rawValue: indexPath.section)!
+        
         switch section {
+        case .title:
+            cell.textLabel?.text = film.properties.title ?? "N/A"
+        case .episode:
+            cell.textLabel?.text = "Episode \(film.properties.episodeId ?? 0)"
+        case .director:
+            cell.textLabel?.text = film.properties.director ?? "N/A"
+        case .producer:
+            cell.textLabel?.text = film.properties.producer ?? "N/A"
+        case .releaseDate:
+            cell.textLabel?.text = film.properties.releaseDate ?? "N/A"
         case .starships:
             cell.textLabel?.text = film.starships[indexPath.row].name
         case .vehicles:
@@ -73,7 +95,8 @@ class FilmDetailViewController: UIViewController, UITableViewDelegate, UITableVi
         case .species:
             cell.textLabel?.text = film.species[indexPath.row].name
         }
-
+        
         return cell
     }
+
 }
