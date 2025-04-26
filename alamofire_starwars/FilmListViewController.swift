@@ -1,5 +1,18 @@
 import UIKit
 import Alamofire
+class FilmData {
+    var properties: FilmProperties
+    var characters: [CharacterProperties] = []
+    var vehicles: [VehicleProperties] = []
+    var starships: [StarshipProperties] = []
+    var planets: [PlanetProperties] = []
+    var species: [SpeciesProperties] = []
+
+    init(properties: FilmProperties) {
+        self.properties = properties
+    }
+}
+
 struct CharacterDetailResponse: Codable {
     let message: String
     let result: CharacterDetailResult
@@ -205,7 +218,8 @@ struct FilmProperties: Codable {
 // MARK: - ViewController
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-    var films: [FilmProperties] = []
+    var films: [FilmData] = []
+
     @IBOutlet weak var tableView: UITableView!
 
     override func viewDidLoad() {
@@ -222,19 +236,18 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         AF.request(url).responseDecodable(of: FilmListResponse.self) { response in
             switch response.result {
             case .success(let filmListResponse):
-                self.films = filmListResponse.result.map { $0.properties }
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                }
-
+                self.films = filmListResponse.result.map { FilmData(properties: $0.properties) }
 
                 for film in self.films {
+                    self.fetchCharacterDetails(from: film.properties.characters ?? [], for: film)
+                    self.fetchVehicleDetails(from: film.properties.vehicles ?? [], for: film)
+                    self.fetchStarshipDetails(from: film.properties.starships ?? [], for: film)
+                    self.fetchPlanetDetails(from: film.properties.planets ?? [], for: film)
+                    self.fetchSpeciesDetails(from: film.properties.species ?? [], for: film)
+                }
 
-                    self.fetchCharacterDetails(from: film.characters!)
-                    self.fetchVehicleDetails(from: film.vehicles!)
-                    self.fetchStarshipDetails(from: film.starships!)
-                    self.fetchPlanetDetails(from: film.planets!)
-                    self.fetchSpeciesDetails(from: film.species!)
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
                 }
 
             case .failure(let error):
@@ -244,9 +257,10 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
 
 
+
     
 
-    func fetchSpeciesDetails(from urls: [String]) {
+    func fetchSpeciesDetails(from urls: [String], for film: FilmData) {
         let group = DispatchGroup()
 
         for url in urls {
@@ -255,7 +269,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             AF.request(url).responseDecodable(of: SpeciesDetailResponse.self) { response in
                 switch response.result {
                 case .success(let detail):
-                    let species = detail.result.properties
+                    film.species.append(detail.result.properties)
 
                 case .failure(let error):
                     print("⚠️ Failed to fetch species: \(error.localizedDescription)")
@@ -268,7 +282,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             print("✅ Tüm species verileri getirildi.")
         }
     }
-    func fetchStarshipDetails(from urls: [String]) {
+    func fetchStarshipDetails(from urls: [String], for film: FilmData) {
         let group = DispatchGroup()
 
         for url in urls {
@@ -277,7 +291,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             AF.request(url).responseDecodable(of: StarshipDetailResponse.self) { response in
                 switch response.result {
                 case .success(let detail):
-                    let starship = detail.result.properties
+                    film.starships.append(detail.result.properties)
 
                 case .failure(let error):
                     print("⚠️ Failed to fetch starship: \(error.localizedDescription)")
@@ -290,7 +304,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             print("✅ Tüm starship verileri getirildi.")
         }
     }
-    func fetchPlanetDetails(from urls: [String]) {
+    func fetchPlanetDetails(from urls: [String], for film: FilmData) {
         let group = DispatchGroup()
 
         for url in urls {
@@ -299,7 +313,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             AF.request(url).responseDecodable(of: PlanetDetailResponse.self) { response in
                 switch response.result {
                 case .success(let detail):
-                    let planet = detail.result.properties
+                    film.planets.append(detail.result.properties)
 
                 case .failure(let error):
                     print("⚠️ Failed to fetch planet: \(error.localizedDescription)")
@@ -312,7 +326,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             print("✅ Tüm planet verileri getirildi.")
         }
     }
-    func fetchVehicleDetails(from urls: [String]) {
+    func fetchVehicleDetails(from urls: [String], for film: FilmData) {
         let group = DispatchGroup()
 
         for url in urls {
@@ -321,7 +335,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             AF.request(url).responseDecodable(of: VehicleDetailResponse.self) { response in
                 switch response.result {
                 case .success(let detail):
-                    let vehicle = detail.result.properties
+                    film.vehicles.append(detail.result.properties)
 
                 case .failure(let error):
                     print("⚠️ Failed to fetch vehicle: \(error.localizedDescription)")
@@ -334,7 +348,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             print("✅ Tüm vehicle verileri getirildi.")
         }
     }
-    func fetchCharacterDetails(from urls: [String]) {
+    func fetchCharacterDetails(from urls: [String], for film: FilmData) {
         let group = DispatchGroup()
 
         for url in urls {
@@ -343,8 +357,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             AF.request(url).responseDecodable(of: CharacterDetailResponse.self) { response in
                 switch response.result {
                 case .success(let detail):
-                    let character = detail.result.properties
-
+                    film.characters.append(detail.result.properties)
                 case .failure(let error):
                     print("⚠️ Failed to fetch character: \(error.localizedDescription)")
                 }
@@ -365,13 +378,14 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "FilmCell", for: indexPath)
-        let film = films[indexPath.row]
+        let film = films[indexPath.row].properties
         let episode = film.episodeId ?? 0
         let title = film.title ?? "No Title"
         cell.textLabel?.text = "Episode \(episode): \(title)"
-
+        
         return cell
     }
+
 
     // MARK: - Navigation
 
@@ -380,18 +394,17 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         performSegue(withIdentifier: "ShowFilmDetail", sender: film)
     }
 
-
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ShowFilmDetail" {
             guard let destination = segue.destination as? FilmDetailViewController,
-                  let film = sender as? FilmProperties else {
+                  let film = sender as? FilmData else {
                 print("❌ Segue hatası: veri aktarılamadı")
                 return
             }
-            print("✅ Film verisi:", film.title)
-            destination.film = film
+            destination.filmData = film
         }
     }
+
 
 
 }
