@@ -76,24 +76,98 @@ class FilmDetailViewController: UIViewController, UITableViewDelegate, UITableVi
         switch section {
         case .title:
             cell.textLabel?.text = film.properties.title ?? "N/A"
+            
         case .episode:
             cell.textLabel?.text = "Episode \(film.properties.episodeId ?? 0)"
+            
         case .director:
             cell.textLabel?.text = film.properties.director ?? "N/A"
+            
         case .producer:
             cell.textLabel?.text = film.properties.producer ?? "N/A"
+            
         case .releaseDate:
             cell.textLabel?.text = film.properties.releaseDate ?? "N/A"
+            
         case .starships:
-            cell.textLabel?.text = film.starships[indexPath.row].name
+            let starship = film.starships[indexPath.row]
+            cell.textLabel?.numberOfLines = 0
+            cell.textLabel?.text = """
+            Name: \(starship.name)
+            Model: \(starship.model)
+            Starship Class: \(starship.starshipClass)
+            Manufacturer: \(starship.manufacturer)
+            Cost in Credits: \(starship.costInCredits)
+            Length: \(starship.length)
+            Crew: \(starship.crew)
+            Passengers: \(starship.passengers)
+            Max Speed: \(starship.maxAtmospheringSpeed)
+            Cargo Capacity: \(starship.cargoCapacity)
+            Consumables: \(starship.consumables)
+            Hyperdrive Rating: \(starship.hyperdriveRating)
+            MGLT: \(starship.MGLT)
+            """
+            
         case .vehicles:
-            cell.textLabel?.text = film.vehicles[indexPath.row].name
+            let vehicle = film.vehicles[indexPath.row]
+            cell.textLabel?.numberOfLines = 0
+            cell.textLabel?.text = """
+            Name: \(vehicle.name)
+            Model: \(vehicle.model)
+            Manufacturer: \(vehicle.manufacturer)
+            Vehicle Class: \(vehicle.vehicleClass)
+            Cost in Credits: \(vehicle.costInCredits)
+            Length: \(vehicle.length)
+            Crew: \(vehicle.crew)
+            Passengers: \(vehicle.passengers)
+            Max Speed: \(vehicle.maxAtmospheringSpeed)
+            Cargo Capacity: \(vehicle.cargoCapacity)
+            Consumables: \(vehicle.consumables)
+            """
+            
         case .planets:
-            cell.textLabel?.text = film.planets[indexPath.row].name
+            let planet = film.planets[indexPath.row]
+            cell.textLabel?.numberOfLines = 0
+            cell.textLabel?.text = """
+            Name: \(planet.name)
+            Climate: \(planet.climate)
+            Surface Water: \(planet.surfaceWater)
+            Diameter: \(planet.diameter)
+            Rotation Period: \(planet.rotationPeriod)
+            Terrain: \(planet.terrain)
+            Gravity: \(planet.gravity)
+            Orbital Period: \(planet.orbitalPeriod)
+            Population: \(planet.population)
+            """
+            
         case .characters:
-            cell.textLabel?.text = film.characters[indexPath.row].name
+            let character = film.characters[indexPath.row]
+            cell.textLabel?.numberOfLines = 0
+            cell.textLabel?.text = """
+            Name: \(character.name)
+            Gender: \(character.gender)
+            Skin Color: \(character.skinColor)
+            Hair Color: \(character.hairColor)
+            Height: \(character.height)
+            Eye Color: \(character.eyeColor)
+            Mass: \(character.mass)
+            Birth Year: \(character.birthYear)
+            """
+            
         case .species:
-            cell.textLabel?.text = film.species[indexPath.row].name
+            let species = film.species[indexPath.row]
+            cell.textLabel?.numberOfLines = 0
+            cell.textLabel?.text = """
+            Name: \(species.name)
+            Classification: \(species.classification)
+            Designation: \(species.designation)
+            Average Height: \(species.averageHeight)
+            Average Lifespan: \(species.averageLifespan)
+            Language: \(species.language)
+            Skin Colors: \(species.skinColors)
+            Hair Colors: \(species.hairColors)
+            Eye Colors: \(species.eyeColors)
+            """
         }
         
         return cell
